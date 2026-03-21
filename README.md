@@ -22,6 +22,8 @@ related_documents:
 [![Stack](https://img.shields.io/badge/Stack-PostGIS_+_FastAPI_+_React-blue)]()
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 
+
+![alt text](assets/repo-banner.jpg)
 > A self-hosted aviation data platform that receives, decodes, segments, and serves ADS-B aircraft surveillance data through a web UI with live map visualization and data science capabilities — all on a single edge box.
 
 Planegraph treats ADS-B data as a first-class dataset rather than a live-map-and-forget exercise. Every position report flows through a materialization pipeline that segments flights, classifies phases, computes derived metrics, and serves the results through a React dashboard with MapLibre GL mapping and Deck.gl overlays. The system enables queries that no existing open-source ADS-B tool supports — approach deviation analysis, traffic pattern heatmaps, fleet composition trends, and trajectory replay.
@@ -57,12 +59,7 @@ The entire system runs on a low-power edge box (Intel N100, 12GB RAM, 256GB SSD)
 
 ### Data Flow
 
-```
-Antenna → SAWbird+ LNA → RTL-SDR v5 → ultrafeeder (readsb)
-  → SBS port 30003 → Python ingest daemon → PostgreSQL (position_reports)
-    → Session segmentation → Flight materialization → Derived metrics
-      → FastAPI (REST + WebSocket) → React SPA (MapLibre + Deck.gl)
-```
+![alt text](assets/data-flow-section-infographic.jpg)
 
 ### Software Stack
 
