@@ -40,6 +40,7 @@ services:
       READSB_GAIN: ${READSB_GAIN}
       READSB_NET_SBS_OUTPUT_PORT: ${READSB_NET_SBS_OUTPUT_PORT}
       READSB_NET_BEAST_OUTPUT_PORT: ${READSB_NET_BEAST_OUTPUT_PORT}
+      READSB_NET_CONNECTOR: planegraph-dump978,30978,raw_in
       UPDATE_TAR1090: ${UPDATE_TAR1090}
       TAR1090_DEFAULTCENTERLAT: ${RECEIVER_LAT}
       TAR1090_DEFAULTCENTERLON: ${RECEIVER_LON}
@@ -49,6 +50,24 @@ services:
       - "8080:80"
       - "30003:30003"
       - "30005:30005"
+    depends_on:
+      - planegraph-dump978
+    networks:
+      - planegraph-net
+
+  planegraph-dump978:
+    image: ghcr.io/sdr-enthusiasts/docker-dump978:latest
+    container_name: planegraph-dump978
+    restart: unless-stopped
+    privileged: true
+    environment:
+      DUMP978_RTLSDR_DEVICE: ${DUMP978_RTLSDR_DEVICE}
+      TZ: ${TZ:-America/New_York}
+    volumes:
+      - /dev/bus/usb:/dev/bus/usb
+    ports:
+      - "30978:30978"
+      - "30979:30979"
     networks:
       - planegraph-net
 

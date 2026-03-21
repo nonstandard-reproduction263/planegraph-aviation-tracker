@@ -24,6 +24,72 @@ Session-by-session progress tracking. Agent instances (Claude Code, OpenCode, Cl
 
 ## Log
 
+### 2026-03-21 — Claude.ai Session 6 + Claude Code — Outdoor Deployment & dump978
+
+**Duration**: ~1h
+**Scope**: First outdoor hardware deployment, dump978 service addition, signal validation
+
+**Completed**:
+- Outdoor deployment: antennas mounted on fence posts (20' from house), SAWBird+ LNA powered from router backup USB, all hardware in smaller weatherproof enclosure with extension cord
+- WiFi (RTL8821CE, `wlp2s0`) connected at 10.16.207.68 on 5GHz channel 36, -55 dBm from office — sufficient for management
+- Verified both RTL-SDR dongles visible (`lsusb` shows two Realtek devices)
+- Ultrafeeder healthy within 2 minutes of startup, immediately receiving 1090 MHz ADS-B
+- Initial reception: 5 aircraft, 4 with position, RSSI range -49.5 to -29.6 dBm, median -33.2 dBm — excellent signal quality
+- CC added dump978 service to Docker Compose stack (978 MHz UAT decoder)
+- CC wired dump978 into ultrafeeder via `READSB_NET_CONNECTOR=planegraph-dump978,30978,raw_in`
+- All three containers healthy: planegraph-postgres, planegraph-ultrafeeder, planegraph-dump978
+- dump978 startup: tuner found, PLL locked after cold start, listening on ports 30978/30979, ultrafeeder connected
+- First tracked aircraft from outdoor deployment: SWA2007 (Southwest 737) at 6,400 ft, 2.4nm out, -23.1 dBm RSSI on approach to CMH 28L/R
+- No UAT traffic observed yet — expected for early Saturday afternoon; GA traffic typically increases later
+
+**Decisions**:
+- dump978 added to compose now rather than deferring past WU-07 — hardware is deployed, Saturday afternoon is best UAT test window
+- `DUMP978_RTLSDR_DEVICE=67791993` (dongle 1 serial) used to prevent device contention with dongle 0 (1090 MHz)
+- `depends_on: planegraph-dump978` added to ultrafeeder to ensure dump978 is available before connector attempts
+- Smaller weatherproof box used instead of original CHENGPI IP65 enclosure — all hardware fit
+
+**Artifacts**:
+- `docker/docker-compose.yml` — Added planegraph-dump978 service, READSB_NET_CONNECTOR, depends_on
+- `docker/.env.example` — Added DUMP978_RTLSDR_DEVICE
+
+**Next**:
+- [ ] Monitor for UAT traffic over the afternoon
+- [ ] Commit compose changes and sync local ↔ edge02
+- [ ] Begin WU-04 (Frontend Foundation)
+- [ ] Consider running ingest daemon live test against outdoor reception
+
+---
+
+### 2026-03-18 — Claude.ai Session 5 — WU-03 Review & Status Update
+
+**Duration**: ~30m
+**Scope**: Code review of WU-03 API layer output, status updates, repo management
+
+**Completed**:
+- Reviewed all 12 WU-03 Python modules (main, db, dependencies, live_state, 6 routes, ws/live, schemas)
+- Verified `.gitignore` exception `!services/api/models/` correctly scoped after HuggingFace `models/` rule
+- Noted `snapshot_diff()` sends full records for dirty aircraft rather than field-level diffs; acceptable for Phase 1 payload sizes, WU-04 frontend should treat `updates` as full records
+- No bugs found — WU-03 approved for merge
+- Updated README.md: WU-03 → Complete, WU-04 → Next, version bumped to 0.4, date to 2026-03-18
+- Updated AGENTS.md: WU-03 → Complete, WU-04 → Next
+
+**Decisions**:
+- Full-record diffs in `snapshot_diff()` accepted over field-level diffs — complexity not justified for ~200 aircraft payloads on the N100
+- Dedicated `asyncpg.connect()` for LISTEN tasks (CC's approach) is better than pool-acquired connections used in WU-02 ingest — noted as a pattern to prefer going forward
+
+**Artifacts**:
+- `README.md` — Status update (v0.4)
+- `AGENTS.md` — Status update
+- `WORKLOG.md` — This entry
+
+**Next**:
+- [ ] Commit and push feature branch updates
+- [ ] Open PR for feature/wu-03-api-layer → main
+- [ ] Merge and pull to local + edge02
+- [ ] Begin WU-04 (Frontend Foundation — React + MapLibre GL + Deck.gl)
+
+---
+
 ### 2026-03-17 — Claude Code — WU-03: API Layer
 
 **Duration**: ~1h

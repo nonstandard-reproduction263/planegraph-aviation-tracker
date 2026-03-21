@@ -89,8 +89,8 @@ The project is implemented in seven sequential work units:
 |----|------|--------|
 | 01 | Infrastructure & Data Foundation | ✅ Complete |
 | 02 | Ingest Pipeline & Materialization | ✅ Complete |
-| 03 | API Layer | Next |
-| 04 | Frontend Foundation | Planned |
+| 03 | API Layer | ✅ Complete |
+| 04 | Frontend Foundation | Next |
 | 05 | Dashboard & Configuration UI | Planned |
 | 06 | Data Science & Visualization | Planned |
 | 07 | Integration & Polish | Planned |
