@@ -1,73 +1,97 @@
-# React + TypeScript + Vite
+<!--
+---
+title: "Frontend"
+description: "React SPA for live map visualization, dashboard views, and analytics"
+author: "VintageDon (https://github.com/vintagedon)"
+date: "2026-03-22"
+version: "1.0"
+status: "Complete"
+tags:
+  - type: directory-readme
+  - domain: frontend
+  - tech: [react, typescript, vite, maplibre, deckgl, recharts]
+---
+-->
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# Frontend
 
-Currently, two official plugins are available:
+React 19 single-page application for the Planegraph operator UI. It serves the live aircraft map, dashboard metrics, configuration UI, historical flight views, and WU-06 analytics pages.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+**Status**: Complete (WU-04, WU-05, WU-06)
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 1. Contents
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+frontend/
+├── src/
+│   ├── components/          # Map and shared UI components
+│   ├── hooks/               # WebSocket and stateful UI hooks
+│   ├── pages/               # Route-level pages
+│   ├── store/               # Zustand aircraft store
+│   ├── types/               # API and domain types
+│   └── utils/               # Fetch, formatting, PMTiles helpers
+├── e2e/                     # Playwright end-to-end tests
+├── atlas/                   # Generated aircraft sprite assets in build output
+├── package.json             # Scripts and dependencies
+├── vite.config.ts           # Vite dev/build configuration
+└── README.md                # This file
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 2. Major Features
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- Live map view backed by MapLibre GL and Deck.gl aircraft layers
+- WebSocket-driven in-memory aircraft updates via `/api/v1/live`
+- Historical flight list and per-flight replay pages
+- Approach analysis, heatmap, and airport analytics pages from WU-06
+- Dashboard charts and operational status panels
+- Settings UI for `pipeline_config` inspection and edits
+
+---
+
+## 3. Development
+
+Install dependencies and run the dev server:
+
+```bash
+cd frontend
+npm install
+npm run dev
 ```
+
+Useful scripts:
+
+- `npm run build` — type-check and produce the production bundle
+- `npm run lint` — run ESLint across the frontend workspace
+- `npm run test:e2e` — execute Playwright end-to-end tests
+- `npm run preview` — serve the built bundle locally
+
+The frontend assumes same-origin API access by default. Set `VITE_WS_URL` only when the WebSocket endpoint is hosted separately from the page origin.
+
+---
+
+## 4. Routes
+
+| Route | Purpose |
+|-------|---------|
+| `/` | Live aircraft map |
+| `/dashboard` | Operational metrics and charts |
+| `/settings` | Runtime configuration controls |
+| `/flights` | Historical session list |
+| `/flights/:sessionId` | Flight detail and replay |
+| `/flights/:sessionId/approach` | Approach analysis |
+| `/analytics/heatmap` | Position-density heatmap |
+| `/analytics/airports` | Airport analytics |
+
+---
+
+## 5. Related
+
+| Document | Relationship |
+|----------|--------------|
+| [Repository Root](../README.md) | Parent directory |
+| [API Service](../services/api/README.md) | Backend consumed by this UI |
+| [Documentation](../docs/README.md) | Deployment and operating context |

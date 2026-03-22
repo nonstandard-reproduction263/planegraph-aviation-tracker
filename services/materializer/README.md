@@ -1,23 +1,23 @@
 <!--
 ---
 title: "Materializer Service"
-description: "Scheduled flight metric computation, partition management, and retention enforcement"
+description: "Notification-driven flight trajectory and scalar metric materialization"
 author: "VintageDon (https://github.com/vintagedon)"
-date: "2026-03-17"
-version: "1.0"
-status: "Planned"
+date: "2026-03-22"
+version: "1.1"
+status: "Complete"
 tags:
   - type: directory-readme
   - domain: materialization
-  - tech: [python, postgres]
+  - tech: [python, postgres, postgis]
 ---
 -->
 
 # Materializer Service
 
-Scheduled worker that computes derived flight metrics from raw position reports, manages daily table partitions, and enforces data retention policy. Runs on a configurable schedule alongside the ingest daemon.
+Worker that turns completed flight sessions into query-ready derived products. It listens for new position activity, discovers newly closed sessions, builds trajectory geometries, computes scalar metrics, and records each materialization run.
 
-**Status**: 📋 Planned (WU-02)
+**Status**: Complete (WU-02)
 
 ---
 
@@ -26,42 +26,37 @@ Scheduled worker that computes derived flight metrics from raw position reports,
 ```
 materializer/
 ├── README.md               # This file
-└── [WU-02 deliverables]    # Created during WU-02 implementation
+├── main.py                 # Listener orchestration and watermark tracking
+├── trajectory_builder.py   # Builds trajectory_geom for closed sessions
+├── scalar_computer.py      # Computes total_distance_nm and materialization logs
+└── __init__.py
 ```
 
 ---
 
-## 2. Design Summary
+## 2. Runtime Responsibilities
 
-The materializer closes the loop between raw position data and queryable flight metrics. It operates on completed flight sessions, computing aggregates that the API and dashboard consume.
+- Establish a watermark for the latest already materialized closed session
+- Catch up any closed sessions missed while the service was offline
+- Listen for `new_positions` notifications from PostgreSQL
+- Detect closed sessions that still lack `trajectory_geom`
+- Build `trajectory_geom` using ordered report points
+- Compute scalar metrics such as `total_distance_nm`
+- Write `materialization_log` entries with phase summaries for observability
 
-Key responsibilities:
-
-- Compute flight session summaries (duration, distance, max altitude, average speed)
-- Create tomorrow's daily partition via `create_daily_partition()`
-- Drop expired partitions via `drop_expired_partitions()` per `retention_days` config
-- Log all materialization runs to `materialization_log` for observability
-- Run on a configurable schedule (default: every 5 minutes for metrics, daily for partitions)
+The current service is notification-driven rather than cron-scheduled. Partition creation and retention are handled by the ingest-side `PartitionManager`, not by this service.
 
 ---
 
-## 3. Expected Components
+## 3. Startup
 
-| Component | File | Purpose |
-|-----------|------|---------|
-| Flight Materializer | `flight_materializer.py` | Session metric computation |
-| Partition Manager | `partition_manager.py` | Daily partition lifecycle |
-| Scheduler | `scheduler.py` | Periodic task runner |
-| Main | `main.py` | Service lifecycle and graceful shutdown |
+The service reads PostgreSQL connection settings from the same environment variables used by the API and ingest services.
 
-<!-- CC: When WU-02 code exists, update this README to document:
-     - Actual file inventory and module responsibilities
-     - Materialization queries and their outputs
-     - Partition management schedule and behavior
-     - Performance characteristics (materialization duration, partition sizes)
-     - Interaction with materialization_log table
-     - Failure modes and idempotency guarantees
--->
+Startup command:
+
+```bash
+python -m services.materializer.main
+```
 
 ---
 
@@ -70,5 +65,5 @@ Key responsibilities:
 | Document | Relationship |
 |----------|--------------|
 | [Services](../README.md) | Parent directory |
-| [Data Dictionary](../../docs/reference/data-dictionary.md) | Schema operated on |
-| [Configuration Keys](../../docs/reference/configuration-keys.md) | retention_days and schedule parameters |
+| [Data Dictionary](../../docs/reference/data-dictionary.md) | Tables and columns updated here |
+| [Configuration Keys](../../docs/reference/configuration-keys.md) | Shared runtime config reference |

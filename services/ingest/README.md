@@ -1,11 +1,11 @@
 <!--
 ---
 title: "Ingest Service"
-description: "Asyncio SBS consumer, session manager, and batch writer"
+description: "Asyncio SBS consumer, session manager, batch writer, and partition maintenance"
 author: "VintageDon (https://github.com/vintagedon)"
-date: "2026-03-17"
-version: "1.0"
-status: "Planned"
+date: "2026-03-22"
+version: "1.1"
+status: "Complete"
 tags:
   - type: directory-readme
   - domain: ingest
@@ -15,9 +15,9 @@ tags:
 
 # Ingest Service
 
-Asyncio daemon that consumes decoded ADS-B messages from ultrafeeder's SBS port (30003), segments aircraft tracks into flight sessions, classifies flight phases using fuzzy heuristics, and batch-writes position reports to PostgreSQL.
+Asyncio daemon that consumes decoded ADS-B messages from ultrafeeder's SBS port, segments aircraft tracks into flight sessions, classifies flight phases, persists position reports, and maintains daily partitions needed by the write path.
 
-**Status**: 📋 Planned (WU-02)
+**Status**: Complete (WU-02)
 
 ---
 
@@ -26,44 +26,47 @@ Asyncio daemon that consumes decoded ADS-B messages from ultrafeeder's SBS port 
 ```
 ingest/
 ├── README.md               # This file
-└── [WU-02 deliverables]    # Created during WU-02 implementation
+├── batch_writer.py         # Buffered inserts into position_reports
+├── config.py               # Mutable runtime config + NOTIFY handling
+├── main.py                 # Service lifecycle and task orchestration
+├── partition_manager.py    # Daily partition creation and retention cleanup
+├── phase_classifier.py     # Heuristic flight-phase classification
+├── sbs_reader.py           # SBS/BaseStation TCP reader and parser
+├── session_manager.py      # Per-aircraft session state and rehydration
+└── __init__.py
 ```
 
 ---
 
-## 2. Design Summary
+## 2. Runtime Responsibilities
 
-The ingest daemon is the core data pipeline. It maintains per-ICAO session state in memory, accumulates position reports across SBS message subtypes (MSG,1 through MSG,8), and flushes to Postgres in configurable micro-batches.
-
-Key behaviors:
-
-- Connects to `localhost:30003` via asyncio TCP
-- Merges MSG,3 (position) and MSG,4 (velocity) into unified aircraft state
-- Segments flights using `session_gap_threshold_sec` from `pipeline_config`
-- Classifies phases using `phase_classification` thresholds
-- Batch-writes via `COPY` or `UNNEST` every `batch_interval_sec` seconds
-- Listens for `config_changed` NOTIFY for hot-reload of all parameters
+- Connect to the SBS feed exposed by ultrafeeder on port `30003`
+- Merge relevant SBS message fields into normalized position updates
+- Maintain one active flight session per ICAO hex in memory
+- Ensure `flight_sessions` rows exist before inserting dependent position reports
+- Batch-write reports into PostgreSQL on a configurable flush interval
+- Rehydrate open sessions on startup after daemon restarts
+- Listen for `config_changed` notifications and apply runtime threshold updates
+- Create near-term partitions and reap expired ones through `PartitionManager`
 
 ---
 
-## 3. Expected Components
+## 3. Configuration
 
-| Component | File | Purpose |
-|-----------|------|---------|
-| SBS Reader | `sbs_reader.py` | TCP consumer, CSV line parser, message type routing |
-| Session Manager | `session_manager.py` | Per-ICAO state machine, gap detection, phase classification |
-| Batch Writer | `batch_writer.py` | Micro-batch accumulator, COPY/UNNEST flush to Postgres |
-| Config Listener | `config_listener.py` | PostgreSQL LISTEN for hot-reload |
-| Main | `main.py` | Asyncio event loop, service lifecycle, graceful shutdown |
+The service reads database connectivity and SBS endpoint settings from environment variables, then overlays runtime thresholds from `pipeline_config`.
 
-<!-- CC: When WU-02 code exists, update this README to document:
-     - Actual file inventory and module responsibilities
-     - Configuration parameters consumed (from pipeline_config)
-     - Startup command and environment requirements
-     - Health indicators and monitoring endpoints
-     - Performance characteristics (messages/sec, batch sizes, memory footprint)
-     - Failure modes and recovery behavior
--->
+Important runtime keys:
+
+- `session_gap_threshold_sec`
+- `ground_turnaround_threshold_sec`
+- `batch_interval_sec`
+- `phase_classification`
+
+Startup command:
+
+```bash
+python -m services.ingest.main
+```
 
 ---
 

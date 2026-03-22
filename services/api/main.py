@@ -216,7 +216,7 @@ def create_app() -> FastAPI:
     application = FastAPI(
         title="Planegraph API",
         description="ADS-B aviation data platform — REST + WebSocket API",
-        version="0.3.0",
+        version="0.7.0",
         lifespan=lifespan,
     )
 

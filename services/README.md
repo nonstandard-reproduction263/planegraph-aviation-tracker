@@ -3,8 +3,8 @@
 title: "Services"
 description: "Application services for ingest, materialization, and API"
 author: "VintageDon (https://github.com/vintagedon)"
-date: "2026-03-17"
-version: "1.0"
+date: "2026-03-22"
+version: "1.1"
 status: "Active"
 tags:
   - type: directory-readme
@@ -35,9 +35,9 @@ services/
 
 | Component | Description | Status |
 |-----------|-------------|--------|
-| [ingest/](ingest/) | Asyncio daemon consuming SBS from ultrafeeder port 30003, segmenting flights, batch-writing to Postgres | 📋 Planned (WU-02) |
-| [materializer/](materializer/) | Scheduled worker computing flight metrics, managing daily partitions, enforcing retention | 📋 Planned (WU-02) |
-| [api/](api/) | FastAPI application serving REST queries, WebSocket live feed, and configuration endpoints | 📋 Planned (WU-03) |
+| [ingest/](ingest/) | Asyncio daemon consuming SBS from ultrafeeder port 30003, segmenting flights, batch-writing to Postgres | ✅ Complete (WU-02) |
+| [materializer/](materializer/) | Scheduled worker computing flight metrics, managing daily partitions, enforcing retention | ✅ Complete (WU-02) |
+| [api/](api/) | FastAPI application serving REST queries, analytics endpoints, WebSocket live feed, and configuration endpoints | ✅ Complete (WU-03, WU-05, WU-06) |
 
 ---
 

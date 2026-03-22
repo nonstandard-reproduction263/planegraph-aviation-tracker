@@ -117,6 +117,10 @@ class LiveCache:
         self._watermark: Optional[datetime] = None
         self._session_gap_sec: int = session_gap_sec
 
+        # Serializes NOTIFY-driven refreshes so bursty notification traffic does
+        # not trigger duplicate catch-up queries against the same watermark.
+        self._notify_lock = asyncio.Lock()
+
         # Accumulated since the last snapshot_diff() call.
         self._dirty: Set[str] = set()
         self._removals: List[str] = []
@@ -175,28 +179,29 @@ class LiveCache:
             log.warning("live_cache: bad notify payload: %r", payload)
             return
 
-        since = self._watermark or datetime.fromtimestamp(0, tz=timezone.utc)
+        async with self._notify_lock:
+            since = self._watermark or datetime.fromtimestamp(0, tz=timezone.utc)
 
-        try:
-            rows = await pool.fetch(_FETCH_SQL, since)
-        except Exception as exc:
-            log.error("live_cache: fetch after notify failed: %s", exc)
-            return
+            try:
+                rows = await pool.fetch(_FETCH_SQL, since)
+            except Exception as exc:
+                log.error("live_cache: fetch after notify failed: %s", exc)
+                return
 
-        if not rows:
-            return
+            if not rows:
+                return
 
-        async with self._lock:
-            new_watermark = self._watermark
-            for row in rows:
-                record = _row_to_record(row)
-                hex_ = record["hex"]
-                self._aircraft[hex_] = record
-                self._dirty.add(hex_)
-                rt: datetime = row["report_time"]
-                if new_watermark is None or rt > new_watermark:
-                    new_watermark = rt
-            self._watermark = new_watermark
+            async with self._lock:
+                new_watermark = self._watermark
+                for row in rows:
+                    record = _row_to_record(row)
+                    hex_ = record["hex"]
+                    self._aircraft[hex_] = record
+                    self._dirty.add(hex_)
+                    rt: datetime = row["report_time"]
+                    if new_watermark is None or rt > new_watermark:
+                        new_watermark = rt
+                self._watermark = new_watermark
 
         log.debug("live_cache: merged %d rows, watermark=%s", len(rows), new_watermark)
 

@@ -1,10 +1,10 @@
 <!--
 ---
 title: "API Service"
-description: "FastAPI REST endpoints and WebSocket live aircraft feed"
+description: "FastAPI REST endpoints, analytics, and WebSocket live aircraft feed"
 author: "VintageDon (https://github.com/vintagedon)"
-date: "2026-03-17"
-version: "1.1"
+date: "2026-03-22"
+version: "1.2"
 status: "Complete"
 tags:
   - type: directory-readme
@@ -15,9 +15,9 @@ tags:
 
 # API Service
 
-FastAPI application serving REST endpoints for flight queries, configuration management, and system health, plus a WebSocket endpoint for live aircraft position streaming to the frontend.
+FastAPI application serving REST endpoints for flight queries, analytics, configuration management, and system health, plus a WebSocket endpoint for live aircraft position streaming to the frontend.
 
-**Status**: ✅ Complete (WU-03)
+**Status**: ✅ Complete (WU-03, WU-05, WU-06)
 
 ---
 
@@ -35,10 +35,11 @@ api/
 │   ├── __init__.py
 │   ├── aircraft.py         # GET /api/v1/aircraft (live cache)
 │   ├── airspace.py         # GET /api/v1/airspace (reference geometry)
+│   ├── analytics.py        # Track, approach analysis, heatmap, airport analytics
 │   ├── config.py           # GET /api/v1/config, PATCH /api/v1/config/{key}
-│   ├── flights.py          # GET /api/v1/flights, GET /api/v1/flights/{id}
+│   ├── flights.py          # GET /api/v1/flights (filterable), GET /api/v1/flights/{id}
 │   ├── health.py           # GET /api/v1/health
-│   └── stats.py            # GET /api/v1/stats
+│   └── stats.py            # GET /api/v1/stats, hourly, phases, top-aircraft
 ├── ws/
 │   ├── __init__.py
 │   └── live.py             # WS /api/v1/live (FULL_STATE + DIFFERENTIAL_UPDATE)
@@ -57,9 +58,11 @@ Key capabilities:
 
 - In-memory live aircraft cache updated via `LISTEN new_positions` (no polling)
 - WebSocket endpoint: `FULL_STATE` on connect, `DIFFERENTIAL_UPDATE` every second
-- REST endpoints for flight session queries with PostGIS trajectory GeoJSON
-- REST endpoints for reference geometry (airports, runways, airspace, POIs)
+- REST endpoints for flight session queries with filtering (callsign, hex, date range, min duration) and PostGIS trajectory GeoJSON
+- Analytics endpoints: flight track time-series, server-side glideslope approach analysis, random-sampled heatmap points, airport summary/runway utilization/hourly activity
+- REST endpoints for reference geometry (airports, airspace boundaries, POIs)
 - REST endpoints for pipeline configuration with hot-reload via DB trigger
+- Dashboard stats endpoints: hourly flight counts, phase distribution, top aircraft
 - System health and operational statistics endpoints
 - OpenAPI/Swagger documentation auto-generated at `/docs`
 
@@ -71,10 +74,19 @@ Key capabilities:
 |--------|------|--------|-------------|
 | `GET` | `/api/v1/health` | Postgres + TCP | API, DB, ingest, and ultrafeeder health |
 | `GET` | `/api/v1/aircraft` | Live cache | All currently tracked aircraft |
-| `GET` | `/api/v1/flights` | Postgres | Paginated session list (`?limit=&offset=`) |
+| `GET` | `/api/v1/flights` | Postgres | Paginated session list with optional callsign, hex, date-range, min-duration filters |
 | `GET` | `/api/v1/flights/{id}` | Postgres | Session detail with trajectory GeoJSON |
+| `GET` | `/api/v1/flights/{id}/track` | Postgres | Ordered time-series of position reports |
+| `GET` | `/api/v1/flights/{id}/approach-analysis` | Postgres + PostGIS | Server-side glideslope deviation with severity classification |
 | `GET` | `/api/v1/stats` | Postgres + cache | Active aircraft, flights today, ingest rate, materializer lag |
-| `GET` | `/api/v1/airspace` | Postgres | Airports, boundaries, POIs as GeoJSON |
+| `GET` | `/api/v1/stats/hourly` | Postgres | Flight counts per hour for past N hours |
+| `GET` | `/api/v1/stats/phases` | Postgres | Phase distribution from recent position reports |
+| `GET` | `/api/v1/stats/top-aircraft` | Postgres | Aircraft ranked by flight count (24h) |
+| `GET` | `/api/v1/analytics/heatmap-samples` | Postgres | Random-sampled weighted points for client-side heatmap |
+| `GET` | `/api/v1/analytics/airports/summary` | Postgres | Arrivals and departures per airport |
+| `GET` | `/api/v1/analytics/airports/runway-utilization` | Postgres + PostGIS | Estimated runway usage via last-position proximity |
+| `GET` | `/api/v1/analytics/airports/hourly` | Postgres | Hour-bucketed flight activity for a specific airport |
+| `GET` | `/api/v1/airspace` | Postgres | Airports, airspace boundaries, POIs as GeoJSON |
 | `GET` | `/api/v1/config` | Postgres | All `pipeline_config` entries |
 | `PATCH` | `/api/v1/config/{key}` | Postgres | Update a config value (triggers `config_changed` NOTIFY) |
 | `WS` | `/api/v1/live` | Live cache | Live aircraft WebSocket stream |

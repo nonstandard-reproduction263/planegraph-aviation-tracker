@@ -2,43 +2,34 @@
 
 ## Supported Versions
 
-Use this section to tell people about which versions of your project are currently being supported with security updates.
+Planegraph is pre-1.0 software under active development. Security fixes are applied to the `main` branch only.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 1.0.x   | :white_check_mark: |
-| < 1.0   | :x:                |
+| Version | Supported |
+|---------|-----------|
+| main branch (latest) | ✅ |
+| Older commits | ❌ |
 
 ## Reporting a Vulnerability
 
-We take the security of Docker Compose Cookbook seriously. If you have discovered a security vulnerability, we appreciate your help in disclosing it to us in a responsible manner.
+If you discover a security vulnerability, please report it responsibly:
 
-**Please do not report security vulnerabilities through public GitHub issues.**
+1. **Do not** open a public GitHub issue for security vulnerabilities.
+2. Email the maintainer directly at the address listed in the GitHub profile, or use GitHub's private vulnerability reporting feature.
+3. Include a clear description of the vulnerability, steps to reproduce, and any potential impact.
 
-Instead, please send an email to githubrepos@beardinthe.cloud. You should receive a response within 48 hours. If for some reason you do not, please follow up via email to ensure we received your original message.
+You should expect an initial response within 72 hours. If the vulnerability is confirmed, a fix will be prioritized and released as soon as practical.
 
-Please include the following information in your report:
+## Scope
 
-- Type of issue (e.g. buffer overflow, SQL injection, cross-site scripting, etc.)
-- Full paths of source file(s) related to the manifestation of the issue
-- The location of the affected source code (tag/branch/commit or direct URL)
-- Any special configuration required to reproduce the issue
-- Step-by-step instructions to reproduce the issue
-- Proof-of-concept or exploit code (if possible)
-- Impact of the issue, including how an attacker might exploit the issue
+Planegraph is designed as a self-hosted, single-user appliance running on a local network. The threat model assumes trusted-network deployment — there is no authentication layer, no multi-tenancy, and no public-facing exposure by default.
 
-This information will help us triage your report more quickly.
+Security-relevant areas include:
 
-## Preferred Languages
+- **PostgreSQL credentials** stored in `.env` (gitignored, never committed)
+- **Network exposure** via Docker published ports and the nginx reverse proxy
+- **OS hardening** documented in `docs/security/cis-v8-ig1-baseline.md`
+- **SDR hardware access** requiring USB device permissions
 
-We prefer all communications to be in English.
+## Hardening Documentation
 
-## Policy
-
-- We will acknowledge receipt of your vulnerability report within 3 working days and will send you regular updates about our progress.
-- If you have followed the instructions above, we will not take any legal action against you in regard to the report.
-- We will handle your report with strict confidentiality, and not pass on your personal details to third parties without your permission.
-- We will keep you informed of the progress towards resolving the problem.
-- As a token of our appreciation for your assistance, we may offer a reward for your report, depending on its severity and quality.
-
-Thank you for helping keep Docker Compose Cookbook and our users safe!
+See `docs/deployment/02-security-hardening.md` for the full security hardening guide, which covers SSH lockdown, UFW firewall rules, auditd, AIDE, fail2ban, sysctl hardening, and Docker daemon configuration.

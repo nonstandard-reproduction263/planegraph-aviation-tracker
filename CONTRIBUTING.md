@@ -1,55 +1,43 @@
-# Contributing to Docker Compose Cookbook
+# Contributing to Planegraph
 
-First off, thank you for considering contributing to the Docker Compose Cookbook! It's people like you that make this project such a great resource for the community.
+Thank you for your interest in contributing to Planegraph. This project is primarily developed by a solo maintainer, but contributions are welcome.
 
-## How Can I Contribute?
+## How to Contribute
 
-### Reporting Bugs
+### Reporting Issues
 
-- Before submitting a bug report, please check the existing issues to see if the problem has already been reported.
-- If you're unable to find an open issue addressing the problem, open a new one. Be sure to include a clear title, a detailed description, and as much relevant information as possible.
-
-### Suggesting Enhancements
-
-- Open a new issue with a clear title and detailed description of your enhancement suggestion.
-- Explain why this enhancement would be useful to most Docker Compose Cookbook users.
+If you find a bug or have a feature request, please open a GitHub issue with a clear description, steps to reproduce (for bugs), and any relevant logs or screenshots.
 
 ### Pull Requests
 
-1. Fork the repository and create your branch from `main`.
-2. If you've added code that should be tested, add tests.
-3. Ensure your code follows the existing style guidelines.
-4. Make sure your code lints.
-5. Issue that pull request!
+1. Fork the repository and create a feature branch from `main`.
+2. Follow the existing code patterns and conventions documented in `AGENTS.md`.
+3. Ensure `npm run build` passes for frontend changes and `python -m compileall services/` passes for backend changes.
+4. Run the Playwright e2e tests (`cd frontend && npx playwright test`) if your changes touch the frontend.
+5. Write a clear commit message describing the change.
+6. Open a PR against `main`.
 
-## Styleguides
+### Development Setup
 
-### Git Commit Messages
+The full stack runs on an Intel N100 edge box with Ubuntu 24.04. For development:
 
-- Use the present tense ("Add feature" not "Added feature")
-- Use the imperative mood ("Move cursor to..." not "Moves cursor to...")
-- Limit the first line to 72 characters or less
-- Reference issues and pull requests liberally after the first line
+- Python 3.11+ with asyncpg, FastAPI, uvicorn
+- Node.js 24+ with Vite, React 19, TypeScript
+- PostgreSQL 16 with PostGIS
+- Docker Compose for infrastructure services (PostgreSQL, ultrafeeder)
 
-### Docker Compose Files
+See `docs/deployment/` for the complete setup guide.
 
-- Use 2-space indentation
-- Use lowercase for service names
-- Use environment variables for configurable values
-- Include comments for non-obvious configurations
+### Code Style
 
-### Documentation
-
-- Use Markdown for all documentation files
-- Keep README files concise and informative
-- Document any special setup or configuration required for each tool
+- **Python**: Type hints required, NumPy-style docstrings, follow patterns in surrounding files
+- **TypeScript**: Strict mode, CSS Modules for styling, functional React components
+- **SQL**: Lowercase keywords, snake_case identifiers, migrations numbered sequentially
 
 ## Code of Conduct
 
-This project and everyone participating in it is governed by the Docker Compose Cookbook Code of Conduct. By participating, you are expected to uphold this code. Please report unacceptable behavior to [INSERT EMAIL HERE].
+Please be respectful and constructive in all interactions. See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for details.
 
-## Questions?
+## License
 
-Don't hesitate to contact the project maintainers if you have any questions. We're here to help!
-
-Thank you for your contributions!
+By contributing, you agree that your contributions will be licensed under the [MIT License](LICENSE).

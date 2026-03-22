@@ -92,8 +92,8 @@ The project is implemented in seven sequential work units:
 | 03 | API Layer | ✅ Complete |
 | 04 | Frontend Foundation | ✅ Complete |
 | 05 | Dashboard & Configuration UI | ✅ Complete |
-| 06 | Data Science & Visualization | Next |
-| 07 | Integration & Polish | Planned |
+| 06 | Data Science & Visualization | ✅ Complete |
+| 07 | Integration & Polish | Next |
 
 Specifications for each work unit are in `spec/wu-NN-*/README.md` (not committed to the public repo).
 
