@@ -72,7 +72,9 @@ _notify_queue: asyncio.Queue = asyncio.Queue()
 async def _load_watermark(pool: asyncpg.Pool) -> None:
     global _watermark
     row = await pool.fetchrow(
-        "select max(materialized_at) as wm from materialization_log"
+        """select max(fs.ended_at) as wm
+           from flight_sessions fs
+           where fs.trajectory_geom is not null"""
     )
     if row and row["wm"]:
         _watermark = row["wm"]

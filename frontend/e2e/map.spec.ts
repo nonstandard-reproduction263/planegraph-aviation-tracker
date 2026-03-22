@@ -6,7 +6,7 @@ import {
 } from "./fixtures";
 
 // WebSocket mock URL — must match what the app connects to
-const WS_PATH = "/api/ws/live";
+const WS_PATH = "/api/v1/live";
 
 test.describe("Planegraph SPA — Map View", () => {
   test("NavBar renders with correct links", async ({ page }) => {

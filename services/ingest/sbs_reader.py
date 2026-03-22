@@ -247,7 +247,7 @@ class SBSReader:
                 state.on_ground = update["on_ground"]
 
             # Only emit once we have a valid positional fix
-            if state.lat is None or state.lon is None or state.alt_ft is None:
+            if state.lat is None or state.lon is None:
                 continue
 
             yield PositionReport(

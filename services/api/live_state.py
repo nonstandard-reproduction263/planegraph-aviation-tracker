@@ -50,7 +50,7 @@ select
     pr.report_time
 from position_reports pr
 join flight_sessions fs using (session_id)
-where pr.report_time > $1
+where pr.report_time >= $1
 order by pr.report_time asc
 """
 

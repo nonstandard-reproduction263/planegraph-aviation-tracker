@@ -26,6 +26,8 @@ from .sbs_reader import PositionReport
 
 log = logging.getLogger(__name__)
 
+_COLUMBUS_FIELD_ELEVATION_FT = 815  # KCMH — used as default for AGL conversion
+
 
 @dataclass
 class EnrichedReport:
@@ -122,6 +124,7 @@ class SessionManager:
             on_ground=report.on_ground,
             speed_window=state.speed_window,
             vrate_window=state.vrate_window,
+            field_elevation_ft=_COLUMBUS_FIELD_ELEVATION_FT,
         )
 
         # Turnaround / touch-and-go split
@@ -139,6 +142,7 @@ class SessionManager:
                 on_ground=report.on_ground,
                 speed_window=state.speed_window,
                 vrate_window=state.vrate_window,
+                field_elevation_ft=_COLUMBUS_FIELD_ELEVATION_FT,
             )
 
         # Capture previous phase before overwriting for ground-duration reset
@@ -202,9 +206,10 @@ class SessionManager:
         """
         rows = await pool.fetch(
             """
-            select session_id, hex, callsign, started_at
-            from   flight_sessions
-            where  ended_at is null
+            select fs.session_id, fs.hex, fs.callsign, fs.started_at,
+                   (select max(pr.report_time) from position_reports pr where pr.session_id = fs.session_id) as last_report
+            from   flight_sessions fs
+            where  fs.ended_at is null
             """
         )
         count = 0
@@ -213,13 +218,13 @@ class SessionManager:
             sid  = row["session_id"]
             if icao in self._sessions:
                 continue  # already in memory (shouldn't happen on cold start)
-            now = datetime.now(timezone.utc)
+            last_report = row["last_report"] or row["started_at"]
             state = FlightSessionState(
                 session_id  = sid,
                 icao_hex    = icao,
                 callsign    = row["callsign"],
                 started_at  = row["started_at"],
-                last_seen   = now,
+                last_seen   = last_report,
             )
             self._sessions[icao] = state
             count += 1

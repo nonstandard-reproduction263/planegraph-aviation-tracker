@@ -2,9 +2,10 @@ import { useEffect, useRef } from "react";
 import { useAircraftStore } from "../store/aircraftStore";
 import type { WsMessage } from "../types/aircraft";
 
+const _protocol = window.location.protocol === "https:" ? "wss" : "ws";
 const WS_URL =
   (import.meta.env.VITE_WS_URL as string | undefined) ??
-  `ws://${window.location.host}/api/ws/live`;
+  `${_protocol}://${window.location.host}/api/v1/live`;
 
 const RECONNECT_DELAY_MS = 3000;
 

@@ -40,6 +40,7 @@ class PhaseClassifier:
         on_ground: bool,
         speed_window: deque,
         vrate_window: deque,
+        field_elevation_ft: int = 0,
     ) -> str:
         """
         Returns a phase string.  Updates the rolling windows in-place.
@@ -60,6 +61,9 @@ class PhaseClassifier:
         if alt is None:
             return "UNKNOWN"
 
+        # Convert MSL to AGL using nearest airport field elevation
+        alt_agl = alt - field_elevation_ft
+
         gnd_spd_max   = cfg.get("ground_speed_max_kts",    50)
         gnd_alt_max   = cfg.get("ground_alt_agl_max_ft",  200)
         tof_vr_min    = cfg.get("takeoff_vrate_min_fpm",   200)
@@ -74,20 +78,20 @@ class PhaseClassifier:
         # --- GND: transponder on-ground flag OR very low+slow ---
         if on_ground:
             return "GND"
-        if spd is not None and spd < gnd_spd_max and alt < gnd_alt_max:
+        if spd is not None and spd < gnd_spd_max and alt_agl < gnd_alt_max:
             return "GND"
 
         # --- LDG: very low altitude with negative vrate ---
-        if alt < ldg_alt_max and vrate is not None and vrate < ldg_vr_max:
+        if alt_agl < ldg_alt_max and vrate is not None and vrate < ldg_vr_max:
             return "LDG"
 
         # --- TOF: low altitude with strong positive vrate ---
-        if alt < gnd_alt_max * 3 and vrate is not None and vrate > tof_vr_min:
+        if alt_agl < gnd_alt_max * 3 and vrate is not None and vrate > tof_vr_min:
             return "TOF"
 
         # --- APP: below approach altitude, slow, descending ---
         if (
-            alt < app_alt_max
+            alt_agl < app_alt_max
             and vrate is not None and vrate < des_vr_max
             and (spd is None or spd < app_spd_max)
         ):
