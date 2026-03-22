@@ -58,6 +58,10 @@ class PhaseClassifier:
         vrate = _mean(vrate_window)  if vrate_window  else (float(vrate_fpm)  if vrate_fpm  is not None else None)
         alt   = float(alt_ft) if alt_ft is not None else None
 
+        # --- GND: transponder on-ground flag (no altitude needed) ---
+        if on_ground:
+            return "GND"
+
         if alt is None:
             return "UNKNOWN"
 
@@ -75,9 +79,7 @@ class PhaseClassifier:
         ldg_vr_max    = cfg.get("landing_vrate_max_fpm",  -100)
         ldg_alt_max   = cfg.get("landing_alt_agl_max_ft",  100)
 
-        # --- GND: transponder on-ground flag OR very low+slow ---
-        if on_ground:
-            return "GND"
+        # --- GND: very low+slow (altitude-based fallback) ---
         if spd is not None and spd < gnd_spd_max and alt_agl < gnd_alt_max:
             return "GND"
 
