@@ -4,7 +4,7 @@ main.py — Materializer daemon entry point.
 Startup sequence:
   1. Load environment configuration
   2. Open asyncpg pool
-  3. Establish watermark from materialization_log
+  3. Establish watermark from flight_sessions.ended_at
   4. Start LISTEN new_positions
   5. Start LISTEN config_changed
   6. On each new_positions notification, process newly closed sessions
@@ -62,7 +62,8 @@ def _apply_config(key: str, value) -> None:
 
 # --- Materializer core -------------------------------------------------------
 
-# Watermark: last report_time we have fully processed
+# Watermark: max ended_at among materialized sessions.  Kept consistently
+# in ended_at space — never mixed with report_time or materialized_at.
 _watermark: Optional[datetime] = None
 
 # Queue of notifications from new_positions LISTEN channel
@@ -92,22 +93,15 @@ where  ended_at is not null
   and  ($1::timestamptz is null or ended_at > $1)
 """
 
+_MAX_ENDED_AT_SQL = """
+select max(ended_at) as wm
+from   flight_sessions
+where  session_id = any($1::uuid[])
+"""
+
 
 async def _process_notification(pool: asyncpg.Pool, payload: str) -> None:
     global _watermark
-
-    # Parse the batch boundary from the notification payload
-    try:
-        data = json.loads(payload)
-        max_time_str = data.get("max_time")
-        if max_time_str:
-            batch_max = datetime.fromisoformat(max_time_str.rstrip("Z")).replace(
-                tzinfo=timezone.utc
-            )
-        else:
-            batch_max = datetime.now(timezone.utc)
-    except Exception:
-        batch_max = datetime.now(timezone.utc)
 
     # Find closed sessions with no trajectory yet, newer than watermark
     rows = await pool.fetch(_CLOSED_SINCE_SQL, _watermark)
@@ -126,7 +120,11 @@ async def _process_notification(pool: asyncpg.Pool, payload: str) -> None:
             await build_trajectories(conn, session_ids)
             await compute_scalars(conn, session_ids)
 
-    _watermark = batch_max
+    # Advance watermark to max ended_at of sessions just processed,
+    # keeping it consistently in ended_at space (same clock as _CLOSED_SINCE_SQL).
+    wm_row = await pool.fetchrow(_MAX_ENDED_AT_SQL, session_ids)
+    if wm_row and wm_row["wm"]:
+        _watermark = wm_row["wm"]
     log.info("materializer: done, watermark advanced to %s", _watermark)
 
 

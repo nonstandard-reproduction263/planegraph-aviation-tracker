@@ -2,8 +2,9 @@
 sbs_reader.py — Async SBS/BaseStation TCP reader.
 
 Connects to localhost:30003, parses MSG records, maintains per-ICAO
-rolling state to merge fields across subtypes, and yields complete
-PositionReport objects only after lat, lon, and altitude are known.
+rolling state to merge fields across subtypes, and yields
+PositionReport objects once lat and lon are known (altitude optional,
+allowing MSG subtype 2 surface positions through).
 """
 
 import asyncio
@@ -182,7 +183,8 @@ class SBSReader:
     """
     Async SBS reader.  Connects to the ultrafeeder TCP socket, merges
     per-ICAO rolling state across subtypes, and yields PositionReport
-    objects only when lat, lon, and altitude are all known.
+    objects when lat and lon are known (altitude may be None for
+    surface-only traffic).
     """
 
     def __init__(self, host: str, port: int):
@@ -246,7 +248,7 @@ class SBSReader:
             if "on_ground" in update:
                 state.on_ground = update["on_ground"]
 
-            # Only emit once we have a valid positional fix
+            # Emit once we have a valid positional fix (altitude optional)
             if state.lat is None or state.lon is None:
                 continue
 
